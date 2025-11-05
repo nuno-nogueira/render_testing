@@ -1,6 +1,13 @@
 const express = require("express");
 const app = express();
 app.use(express.json());
+const pino = require("pino");
+const logger = pino({
+  transport: {
+    target: "pino-pretty",
+    options: {colorize: true}
+  }
+}) 
 
 // our "database" data
 let users = [
@@ -19,11 +26,17 @@ let reviews = [
   { id: 3, movieId: 2, userId: 1, text: "Classic sci-fi." }
 ];
 
-app.get("/movies", (req, res) => res.json(movies));
+app.get("/movies", (req, res) => {
+  logger.info(`Request GET /movies received`)
+  
+  res.json(movies)
+});
 
 app.get("/movies/:id", (req, res) => {
+  logger.info(`Request GET /movies/${req.params.id} received`)
   const movie = movies.find(m => m.id === parseInt(req.params.id));
   if (!movie) {
+    logger.warn(`Request GET/movies/${req.params.id} was not found!`)
     return res.status(404).json({ error: "Movie not found" });
   }
 
